@@ -68,16 +68,27 @@ public class DmbTabsScraper {
             // get all songs under each album
             for(Map.Entry<String, String> album : albumMap.entrySet()) {
                 
-                // find all the song links in each album menu (eg. "#menu2 a")         
-                String selector = "#" + album.getKey() + " a";
+                // find all the song links in each album menu (eg. "#menu2 a")    
+            	String albumKey = album.getKey();
+                String selector = "#" + albumKey + " a";
                 Elements songs = doc.select(selector);
+                
+                int songIndex = 0;
     
                 for(Element song : songs) {
+                                    	
+                	Map<String, String> songInfo = this.getSongInfo(urlBase + song.attr("href"));
+
+                	// if the album is not "Live" or "Covers", put a number in front of the song title to
+                	// keep the album order.  Pad that number with 0 if needed.
+                	String title = songInfo.get("title");
+                	if (albumKey != "menu10" && albumKey != "menu11") {
+                		title = ((++songIndex < 10) ? "0" : "")  + songIndex + " - " + songInfo.get("title");
+                	}
+  
+                    this.saveFile(album.getValue(), title, songInfo.get("text"));
                     
-                    System.out.println("saving " + song.text());
-                    
-                    Map<String, String> songInfo = this.getSongInfo(urlBase + song.attr("href"));
-                    this.saveFile(album.getValue(), songInfo.get("title"), songInfo.get("text"));
+                    System.out.println("saving " + title);
                     
                 }
             }
